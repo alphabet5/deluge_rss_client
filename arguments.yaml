@@ -1,0 +1,24 @@
+---
+url:
+  help: URL for the RSS feed to use. Similar to - "https://distrowatch.com/news/torrents.xml"
+  type: str
+  required: True
+download_dir:
+  help: Location to store the downloaded content.
+  type: str
+  required: True
+deluge-console:
+  help: The deluge console connection string. Similar to - "127.0.0.1:52835"
+  type: str
+  default: '127.0.0.1:52835'
+remote:
+  help: IP or hostname of the remote machine to connect to. If this is not included, the local system is used and '--username' and '--password' are not required.
+  type: str
+username:
+  help: Username to connect to the remote machine.
+  type: str
+  required: "'--remote' in sys.argv"
+password:
+  help: Password to connect to the remote machine.
+  type: str
+  required: "'--remote' in sys.argv"
