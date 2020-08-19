@@ -2,10 +2,7 @@
 import xml.etree.ElementTree as ET
 from datetime import datetime
 import re
-import yaml
-from pydoc import locate
-import argparse
-import sys
+
 from time import sleep
 #import pickle
 
@@ -15,6 +12,10 @@ import netmiko
 
 
 def parse_arguments(arguments_yaml_file='arguments.yaml'):
+    import yaml
+    import argparse
+    from pydoc import locate
+    import sys
     with open(arguments_yaml_file, 'r') as y:
         data = yaml.load(y, Loader=yaml.FullLoader)
         parser = argparse.ArgumentParser()
@@ -42,31 +43,27 @@ def p_xml(element):
     else:
         return element.text
 
-
+import subprocess
 if __name__ == '__main__':
     args = vars(parse_arguments('arguments.yaml'))
 
     PARAMS = dict()
     r = requests.get(url=args['url'], params=PARAMS)
 
-    if 'remote' in args:
-        conn = netmiko.ConnectHandler(device_type='terminal_server', ip=args['remote'], username=args['username'], password=args['password'])
-
     last_run = datetime(2000, 1, 1) #pickle.load(open('last_run.db', 'rb'))
     element_tree = ET.fromstring(r.content)
     elements = p_xml(element_tree)
+    first_item = True
     for item in elements['channel']['item']:
         if datetime.strptime(re.match('.*?\d{1,2}\s.*?\s\d{4}\s\d{2}:\d{2}:\d{2}', item['pubDate']).group(), '%a, %d %b %Y %H:%M:%S') > last_run:
             print(item['title'])
-            command = 'deluge-console "connect 127.0.0.1:52835 ; ' + \
-                      'add -p "' + args['download_dir'] + '" "' + item['link'] + '" ; exit"'
-            if 'remote' in args:
-                result = conn.send_command(command)
-                print(result)
-            else:
-                import subprocess
-                process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
-                result, error = process.communicate()
-                print(result, error)
-        sleep(1)
+            command = 'deluge-console -d 192.168.3.98 -p 58846 -U localclient -P 0621b9144fbc4703a6dde4f9f641bcf35164e8e5 add "' + item['link'] + '"'
+            subprocess.call(command, shell=True)
+
+    # if 'remote' in args:
+    #     conn = netmiko.ConnectHandler(device_type='terminal_server', ip=args['remote'],
+    #                                   username=args['username'], password=args['password'])
+    #     result = conn.send_command(command)
+    #     print(result)
+    # else:
     #pickle.dump(datetime.now(), open('last_run.db', 'wb'))
